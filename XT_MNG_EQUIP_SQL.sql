@@ -13,7 +13,7 @@ CREATE TABLE MNG_EQ_ACCOUNT (
 	ACC_ID int primary key identity(1,1) not null,
 	ACC_USERNAME varchar(50) not null,
 	ACC_PASSWORD nvarchar(50) not null,
-	ACC_STATUS bit default 1
+	ACC_STATUS bit default 1 --0:active, 1: inactive
 )
 -- Data test:
 INSERT INTO [dbo].[MNG_EQ_ACCOUNT]
@@ -259,3 +259,25 @@ CREATE TABLE MNG_EQ_TRANSFER (
 	constraint FK_Transfer_Dept_From foreign key (TRN_ID_DEPT_FROM) references MNG_EQ_DEPARTMENT(DEPT_ID),
 	constraint FK_Transfer_Dept_To foreign key (TRN_ID_DEPT_TO) references MNG_EQ_DEPARTMENT(DEPT_ID),
 )
+------------------------TEST QUERY---------------------------------
+Select * from MNG_EQ_ACCOUNT
+Select * from MNG_EQ_DEPARTMENT
+Select * from MNG_EQ_ROLE
+Select * from MNG_EQ_USER
+Select * from MNG_EQ_EQUIPMENT_TYPE
+Select * from MNG_EQ_EQUIPMENT
+Select * from MNG_EQ_USAGE_HISTORY
+Select * from MNG_EQ_MAINTENANCE_SCHEDULE
+Select * from MNG_EQ_REPAIR_REQUEST
+Select * from MNG_EQ_REPAIR_HISTORY
+Select * from MNG_EQ_TRANSFER
+
+--1. get equip of a branch
+Select B.DEPT_NAME, Count(EQUIP_ID_DEPT)Number_Equipment from MNG_EQ_EQUIPMENT A
+left join MNG_EQ_DEPARTMENT B ON A.EQUIP_ID_DEPT = B.DEPT_ID
+group by B.DEPT_NAME
+union all
+Select N'Tổng'DEPT_NAME, Count(*)Number_Equipment from MNG_EQ_EQUIPMENT A
+left join MNG_EQ_DEPARTMENT B ON A.EQUIP_ID_DEPT = B.DEPT_ID
+--group by B.DEPT_NAME
+--order by Number_Equipment
