@@ -221,7 +221,7 @@ CREATE TABLE MNG_EQ_REPAIR_REQUEST (
 	REQ_URGENCY_LEVEL varchar(10) null, --level urgency repair: 0: low, 1:medium, 2:high(important) 
 	REQ_DESCRIPTION nvarchar(200) null, --decribe error/ message to repair
 	REQ_IMG_PATH varchar(max) null, --image of device or st
-	REQ_TYPE_REPAIR int null, --type fix: internal or external
+	--REQ_TYPE_REPAIR int null, --type fix: internal or external
 	REQ_SUPPLIER int null, --if type external => will have supplier. Supplier fix => send bill to technical => technical insert Repair his
 	REQ_STATUS int default 0, --status of request: 0:pending, 1: In process, 2: Done, 3: Cancel
 	constraint FK_Request_Equipment foreign key (REQ_ID_EQUIP) references MNG_EQ_EQUIPMENT(EQUIP_ID),
@@ -236,10 +236,12 @@ CREATE TABLE MNG_EQ_REPAIR_HISTORY (
 	RH_ID_EQUIP int not null,
 	RH_ID_TECHNICAL nvarchar(50) null, --info staff technical fix ticket y/n
 	RH_ID_REQ int null, --info request if have
-	RH_CREATED_DATE smalldatetime null, --date start repair with per technical
+	RH_CREATED_DATE smalldatetime null, --date start repair with per technical/
+	RH_ESTIMATE_DATE smalldatetime null,
 	RH_REPAIR_DATE smalldatetime null, --day fix this request (will update date when finish request)
 	RH_DESCRIPTION nvarchar(max) null, 
 	RH_COST decimal(18,2) null,
+	REQ_TYPE_REPAIR int null,
 	RH_STATUS bit default 0 --status: 0: not done, 1: done (if done then finish ticket)
 	constraint FK_RepairHis_Equipment foreign key (RH_ID_EQUIP) references MNG_EQ_EQUIPMENT(EQUIP_ID),
     constraint FK_RepairHis_User foreign key (RH_ID_TECHNICAL) references NhanVien(MaNV),
@@ -288,7 +290,7 @@ CREATE TABLE MNG_EQ_TRANSFER (
 CREATE TABLE MNG_EQ_LIQUIDATION (
 	LIQ_ID int primary key identity(1,1) not null,
 	LIQ_ID_USER nvarchar(50) not null, --user create ticket liquidation
-	LIQ_CREATED smalldatetime null,
+	LIQ_CREATED_DATE smalldatetime null,
 	LIQ_APPROVE_BY nvarchar(50) null, --user approve this ticket
 	LIS_NOTE nvarchar(max) null 
     constraint FK_Liquidation_User_Create foreign key (LIQ_ID_USER) references NhanVien(MaNV),
@@ -307,44 +309,46 @@ CREATE TABLE MNG_EQ_LIQUIDATION_DETAIL (
 	constraint FK_Liquidation_Dtl_Equipment foreign key (LDTL_ID_EQUIP) references MNG_EQ_EQUIPMENT(EQUIP_ID)
 )
 -- 16.new: add quyen sd with user and dept
---CREATE TABLE [dbo].[QuyenSD](
---	[IdUser] [int] IDENTITY(1,1) NOT NULL,
---	[TenUser] [nvarchar](50) NOT NULL,
---	[MaNV] [nvarchar](50) NULL,
---	[MaPB] [int] NULL,
---	[Password] [nvarchar](50) NULL,
---	[PhanQuyen] [nvarchar](max) NULL,
---	[TruyCap] [bit] NOT NULL,
---	[GhiChu] [nvarchar](255) NULL,
---	[LoaiPM] [tinyint] NULL,
---	[QuyenTruyCap] [varchar](350) NULL,
---	[PhanNhomQL] [nvarchar](max) NULL,
---	[DuocPhep] [int] NULL,
---	[IDUD] [nvarchar](50) NULL,
---	[TaiLieuUser] [nvarchar](max) NULL,
---	[ShareFile] [nvarchar](max) NULL,
---	[StDayOff] [nvarchar](250) NULL,
---	[ChiNhanh] [nvarchar](250) NULL,
---	[SendPassWord] [nvarchar](50) NULL,
---	[SendUserName] [nvarchar](50) NULL,
---	[SmtpServerPort] [int] NULL,
---	[SmtpServer] [nvarchar](50) NULL,
---	[QuyenTruyCapWeb] [varchar](350) NULL,
---	[SmtpDeadline] [tinyint] NULL,
---	[UyQuyen] [nvarchar](50) NULL,
---	[AutSale] [tinyint] NULL,
---	[PathDataFile] [nvarchar](150) NULL,
---	[PathImg] [nvarchar](150) NULL,
---	[IdMay] [int] NULL,
---	[TapTinCC] [nvarchar](150) NULL,
---	[KeyDOTICOM] [nvarchar](250) NULL,
---	[LuuTru] [nvarchar](150) NULL,
---	[FontSys] [nvarchar](150) NULL,
---	[PhanQuyenPOS] [nvarchar](max) NULL,
---	[FontMenu] [nvarchar](150) NULL,
---	[Lock_Cong] [tinyint] NULL,
---	[Status] [bit] NULL
---)
+CREATE TABLE [dbo].[QuyenSD](
+	[IdUser] [int] IDENTITY(1,1) NOT NULL,
+	[TenUser] [nvarchar](50) primary key NOT NULL,
+	[MaNV] [nvarchar](50) NULL,
+	[MaPB] [int] NULL,
+	[Password] [nvarchar](50) NULL,
+	[PhanQuyen] [nvarchar](max) NULL,
+	[TruyCap] [bit] NOT NULL,
+	[GhiChu] [nvarchar](255) NULL,
+	[LoaiPM] [tinyint] NULL,
+	[QuyenTruyCap] [varchar](350) NULL,
+	[PhanNhomQL] [nvarchar](max) NULL,
+	[DuocPhep] [int] NULL,
+	[IDUD] [nvarchar](50) NULL,
+	[TaiLieuUser] [nvarchar](max) NULL,
+	[ShareFile] [nvarchar](max) NULL,
+	[StDayOff] [nvarchar](250) NULL,
+	[ChiNhanh] [nvarchar](250) NULL,
+	[SendPassWord] [nvarchar](50) NULL,
+	[SendUserName] [nvarchar](50) NULL,
+	[SmtpServerPort] [int] NULL,
+	[SmtpServer] [nvarchar](50) NULL,
+	[QuyenTruyCapWeb] [varchar](350) NULL,
+	[SmtpDeadline] [tinyint] NULL,
+	[UyQuyen] [nvarchar](50) NULL,
+	[AutSale] [tinyint] NULL,
+	[PathDataFile] [nvarchar](150) NULL,
+	[PathImg] [nvarchar](150) NULL,
+	[IdMay] [int] NULL,
+	[TapTinCC] [nvarchar](150) NULL,
+	[KeyDOTICOM] [nvarchar](250) NULL,
+	[LuuTru] [nvarchar](150) NULL,
+	[FontSys] [nvarchar](150) NULL,
+	[PhanQuyenPOS] [nvarchar](max) NULL,
+	[FontMenu] [nvarchar](150) NULL,
+	[Lock_Cong] [tinyint] NULL,
+	[Status] [bit] NULL
+	constraint FK_Account_NhanVien foreign key (MaNV) references NhanVien(MaNV),
+	constraint FK_Account_BoPhan foreign key (MaPB) references BoPhan(MaPB)
+)
 ------------------------TEST QUERY---------------------------------
 Drop table  MNG_EQ_ACCOUNT
 Drop table  BoPhan
